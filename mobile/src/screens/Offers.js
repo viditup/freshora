@@ -7,7 +7,7 @@ import AppHeader from '../components/AppHeader';
 import HomeBanner from '../components/HomeBanner';
 import Loading from '../components/Loading';
 import ErrorState, { Empty } from '../components/ErrorState';
-import ProductGrid from '../components/ProductGrid';
+import { HomeCard } from '../components/HomeProducts';
 import { QuickDeliveryStrip } from '../components/HomeOffers';
 import { MembershipBanner, PromoBanner } from '../components/HomeBanners';
 import { C, FONT } from '../theme';
@@ -79,8 +79,8 @@ const DealChip = ({ label, active, onPress }) => {
 
 // Offers tab: built only from existing data (/home banners + discounted products). No backend changes.
 export default function Offers({ navigation }) {
-  const { notify } = useCart();
-  const { u, f } = useDesign();
+  const { notify, add } = useCart();
+  const { u, f, width } = useDesign();
   const [banners, setBanners] = useState([]);
   const [deals, setDeals] = useState(null);
   const [err, setErr] = useState(null);
@@ -110,6 +110,11 @@ export default function Offers({ navigation }) {
   const tiers = TIERS.filter((t) => t.min === 0 || t.min <= maxDiscount);
   const shown = deals.filter((p) => (p.discount || 0) >= min);
   const bw = Math.round(u(974));
+  // Deals use the SAME small cards as Home (4 per row, design proportions) instead of the big 2-column ProductGrid cards.
+  const COLS = 4, GAP = Math.round(u(14)), SIDE = Math.round(u(42));
+  const cardW = Math.floor((width - 2 * SIDE - (COLS - 1) * GAP) / COLS);
+  const openProduct = (p) => navigation.navigate('ProductDetails', { id: p.id });
+  const onAdd = (p) => add(p.id);
   const allProducts = () => navigation.navigate('Products', { title: 'All Products' });
   const onBanner = (b) => (b.action_type === 'category'
     ? navigation.navigate('Products', { categoryId: b.action_value, title: b.title })
@@ -164,8 +169,17 @@ export default function Offers({ navigation }) {
   );
 
   return wrap(
-    <ProductGrid data={shown} ListHeaderComponent={header} ListFooterComponent={footer}
+    <FlatList data={shown} numColumns={COLS} key={`deals-${COLS}`} keyExtractor={(p) => String(p.id)}
+      ListHeaderComponent={header} ListFooterComponent={footer}
+      showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" style={{ backgroundColor: C.bg }}
       refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }}
+      contentContainerStyle={{ backgroundColor: C.bg }}
+      columnWrapperStyle={{ paddingHorizontal: SIDE, marginBottom: u(18) }}
+      renderItem={({ item, index }) => (
+        <View style={{ marginRight: index % COLS === COLS - 1 ? 0 : GAP }}>
+          <HomeCard product={item} width={cardW} onPress={openProduct} onAdd={onAdd} />
+        </View>
+      )}
       ListEmptyComponent={<Empty icon="🏷️" title="No deals right now" sub="Check back soon for fresh offers." />} />
   );
 }
