@@ -3,6 +3,7 @@ import { Alert, Image, ScrollView, Text, TouchableOpacity, View, useWindowDimens
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 import { api } from '../api';
 import { userKey } from '../storage';
 import { useAuth } from '../context/AuthContext';
@@ -34,13 +35,40 @@ export default function Profile({ navigation }) {
 
   const [orders, setOrders] = useState(null); // null = loading / failed -> counts show "-"
   const [wallet, setWallet] = useState(null);   // demo wallet balance (on-device); re-read on every focus
+  const [photo, setPhoto] = useState(null);   // profile photo chosen on this phone (on-device only, no backend)
   useFocusEffect(useCallback(() => {
     let live = true;
+    AsyncStorage.getItem(userKey(user.id, 'photo')).then((v) => { if (live) setPhoto(v || null); }).catch(() => {});
     AsyncStorage.getItem(userKey(user.id, 'wallet')).then((v) => { if (live) setWallet(v ? (JSON.parse(v).balance || 0) : 0); }).catch(() => {});
     api.get('/orders').then((r) => live && setOrders(r.data.data)).catch(() => {});
     return () => { live = false; };
   }, [user.id]));
 
+  const savePhoto = async (uri) => {
+    setPhoto(uri);
+    try {
+      if (uri) await AsyncStorage.setItem(userKey(user.id, 'photo'), uri);
+      else await AsyncStorage.removeItem(userKey(user.id, 'photo'));
+    } catch (e) {}
+  };
+  const pickPhoto = async (useCamera) => {
+    try {
+      const perm = useCamera ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!perm.granted) { Alert.alert('Permission needed', useCamera ? 'Please allow camera access to take a photo.' : 'Please allow photo access to choose a picture.'); return; }
+      const opts = { mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.6 };
+      const r = useCamera ? await ImagePicker.launchCameraAsync(opts) : await ImagePicker.launchImageLibraryAsync(opts);
+      if (!r.canceled && r.assets && r.assets[0] && r.assets[0].uri) savePhoto(r.assets[0].uri);
+    } catch (e) { Alert.alert('Photo', 'Could not open the picker. Please try again.'); }
+  };
+  const changePhoto = () => {
+    const buttons = [
+      { text: 'Take Photo', onPress: () => pickPhoto(true) },
+      { text: 'Choose from Gallery', onPress: () => pickPhoto(false) },
+    ];
+    if (photo) buttons.push({ text: 'Remove Photo', style: 'destructive', onPress: () => savePhoto(null) });
+    buttons.push({ text: 'Cancel', style: 'cancel' });
+    Alert.alert('Profile photo', 'Add or change your photo', buttons);
+  };
   const benefits = () => Alert.alert('Gold Member benefits', 'Priority support\nEarly access to deals\n\nDemo membership: perks are display only and are not enforced yet.');
   const confirmLogout = () => Alert.alert('Log out', 'Are you sure you want to log out?', [{ text: 'Cancel' }, { text: 'Log out', style: 'destructive', onPress: logout }]);
   const openOrders = (filter) => navigation.getParent()?.navigate('OrdersTab', { screen: 'Root', params: { filter, ts: Date.now() } });
@@ -85,11 +113,13 @@ export default function Profile({ navigation }) {
 
         {/* avatar / details / Edit Profile (white background) */}
         <View style={{ backgroundColor: WHITE, paddingHorizontal: u(16), paddingTop: u(10), flexDirection: 'row', alignItems: 'center' }}>
-          <TouchableOpacity onPress={() => navigation.navigate('EditProfile')} activeOpacity={0.85} style={{ width: u(60), height: u(60) }}>
+          <TouchableOpacity onPress={changePhoto} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel="Change profile photo" style={{ width: u(60), height: u(60) }}>
             <View style={{ width: u(60), height: u(60), borderRadius: u(30), overflow: 'hidden', backgroundColor: C.tint, borderWidth: 1, borderColor: '#E3EFE0' }}>
-              {user.profile_image
-                ? <Img uri={user.profile_image} emoji="👤" style={{ width: u(58), height: u(58) }} />
-                : <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><Text maxFontSizeMultiplier={1} style={{ fontFamily: FONT.headingBold, color: C.green, ...T(26) }}>{user.name?.[0]?.toUpperCase()}</Text></View>}
+              {photo
+                ? <Image source={{ uri: photo }} style={{ width: '100%', height: '100%' }} />
+                : user.profile_image
+                  ? <Img uri={user.profile_image} emoji="👤" style={{ width: u(58), height: u(58) }} />
+                  : <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><Text maxFontSizeMultiplier={1} style={{ fontFamily: FONT.headingBold, color: C.green, ...T(26) }}>{user.name?.[0]?.toUpperCase()}</Text></View>}
             </View>
             <View style={{ position: 'absolute', right: u(-3), bottom: u(-1), width: u(17), height: u(17), borderRadius: u(8.5), backgroundColor: DKGREEN, borderWidth: 1.5, borderColor: WHITE, alignItems: 'center', justifyContent: 'center' }}>
               <Ionicons name="camera" size={u(9)} color="#fff" />

@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from './src/context/AuthContext';
 import Splash from './src/screens/Splash';
 import Onboarding from './src/screens/Onboarding';
 import { Login, Signup } from './src/screens/Auth';
+import ForgotPassword from './src/screens/ForgotPassword';
 import MainTabs from './src/navigation/MainTabs';
 import { useFonts } from 'expo-font';
 import { PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold } from '@expo-google-fonts/plus-jakarta-sans';
@@ -64,6 +65,7 @@ function Root() {
             )}
             <Stack.Screen name="Login" component={Login} />
             <Stack.Screen name="Signup" component={Signup} />
+            <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
           </>
         )}
       </Stack.Navigator>
