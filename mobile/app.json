@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Freshora",
+    "slug": "freshora",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FEFBF2"
+    },
+    "android": {
+      "package": "com.freshora.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FEFBF2"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.freshora.app",
+      "supportsTablet": false
+    }
+  }
+}

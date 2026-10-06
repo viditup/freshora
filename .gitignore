@@ -1,0 +1,14 @@
+node_modules/
+venv/
+.venv/
+.expo/
+__pycache__/
+*.pyc
+.env
+*.zip
+*.db
+*.sqlite3
+dist/
+web-build/
+*.log
+.DS_Store
