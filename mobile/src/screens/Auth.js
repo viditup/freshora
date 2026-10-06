@@ -152,7 +152,7 @@ function LoginView({ navigation, f, set, errs, err, busy, submit, soon, toast })
                 <Ionicons name={show ? 'eye-outline' : 'eye-off-outline'} size={36 * u} color="#3A3F45" />
               </TouchableOpacity>} />
 
-            <TouchableOpacity onPress={() => soon('Password reset')} style={{ alignSelf: 'flex-end', marginRight: 64 * u, marginTop: 14 * u }}>
+            <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword', { phone: f.phone })} style={{ alignSelf: 'flex-end', marginRight: 64 * u, marginTop: 14 * u }}>
               <Text style={{ color: C.green, fontFamily: FONT.bodySemi, fontSize: 21 * u, lineHeight: 26 * u }}>Forgot Password?</Text>
             </TouchableOpacity>
 
