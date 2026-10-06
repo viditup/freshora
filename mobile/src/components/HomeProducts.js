@@ -92,6 +92,7 @@ function HomeProductCard({ product: p, width, onPress, onAdd }) {
   );
 }
 const Card = memo(HomeProductCard);
+export { Card as HomeCard }; // used by the Offers screen deals grid
 
 // Section = heading row (+ optional subtitle / See All) and a horizontal product carousel.
 // tint: soft green full-width band (PDF section background); otherwise plain with a hairline divider on top.
