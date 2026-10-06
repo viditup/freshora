@@ -18,7 +18,7 @@ import { Caveat_700Bold } from '@expo-google-fonts/caveat';
 import { Kalam_300Light } from '@expo-google-fonts/kalam';
 import { applyGlobalFont } from './src/fonts';
 // UI REVIEW SWITCH: true = the 3 onboarding slides show on EVERY app start so you can check them. Set to false before release.
-const ALWAYS_SHOW_ONBOARDING = true;
+const ALWAYS_SHOW_ONBOARDING = false;
 
 applyGlobalFont();
 
